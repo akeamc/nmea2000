@@ -2,8 +2,10 @@
 
 pub mod fast_packet;
 
-pub use fast_packet::FastPacket;
 use generic_array::ArrayLength;
+
+pub use fast_packet::FastPacket;
+pub use generic_array::typenum;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CanId(pub u32);

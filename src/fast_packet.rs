@@ -3,10 +3,7 @@
 //! some group number, frame number, and the actual data. The first frame also
 //! contains the length of the total message transmitted ([`FastPacket::total_len`]).
 
-use generic_array::{
-    typenum::{self, IsGreater, True, Unsigned},
-    GenericArray,
-};
+use generic_array::{typenum::Unsigned, GenericArray};
 
 use crate::Message;
 
@@ -61,11 +58,8 @@ impl FastPacket {
     }
 }
 
-/// A marker trait for messages that are transmitted as [Fast Packets](FastPacket).
-pub trait FastPacketMessage: Message {}
-
 /// A reader for fast packets that combines the frames of a group into a single message.
-pub struct Reader<T: FastPacketMessage> {
+pub struct Reader<T: Message> {
     buf: GenericArray<u8, T::EncodedLen>,
     group_no: u8,
     buf_pos: usize,
@@ -74,7 +68,7 @@ pub struct Reader<T: FastPacketMessage> {
 
 impl<T> Default for Reader<T>
 where
-    T: FastPacketMessage,
+    T: Message,
 {
     fn default() -> Self {
         Self::new()
@@ -83,7 +77,7 @@ where
 
 impl<T> Reader<T>
 where
-    T: FastPacketMessage,
+    T: Message,
 {
     pub fn new() -> Self {
         Self {
