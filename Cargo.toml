@@ -9,4 +9,5 @@ license = "MIT"
 repository = "https://github.com/akeamc/nmea2000"
 
 [dependencies]
+bytes = { version = "1.10.0", default-features = false }
 generic-array = "1.2.0"

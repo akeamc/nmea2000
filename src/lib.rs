@@ -1,9 +1,11 @@
 #![no_std]
 
+mod buf;
 pub mod fast_packet;
 
 use generic_array::ArrayLength;
 
+pub use buf::MessageBuf;
 pub use fast_packet::FastPacket;
 pub use generic_array::typenum;
 
@@ -21,14 +23,6 @@ impl CanId {
 
     pub const fn src(self) -> u8 {
         self.0 as u8
-    }
-}
-
-/// Parse a 2-byte float value with the given precision.
-pub const fn parse_2_byte_float(bytes: [u8; 2], precision: f32) -> Option<f32> {
-    match i16::from_le_bytes(bytes) {
-        0x7fff => None, // This value signals that the data is not available
-        value => Some(value as f32 * precision),
     }
 }
 
