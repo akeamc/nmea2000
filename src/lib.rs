@@ -1,8 +1,9 @@
 #![no_std]
 
-mod fast_packet;
+pub mod fast_packet;
 
 pub use fast_packet::FastPacket;
+use generic_array::ArrayLength;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CanId(pub u32);
@@ -27,4 +28,19 @@ pub const fn parse_2_byte_float(bytes: [u8; 2], precision: f32) -> Option<f32> {
         0x7fff => None, // This value signals that the data is not available
         value => Some(value as f32 * precision),
     }
+}
+
+/// A NMEA 2000 message. This trait is very much inspired by [the gRPC library
+/// Prost's trait with the same name](https://docs.rs/prost/latest/prost/trait.Message.html).
+pub trait Message {
+    /// Total length of the encoded message in bytes.
+    type EncodedLen: ArrayLength;
+
+    /// The error type returned when a message fails to decode.
+    type DecodeError;
+
+    /// Decode a message from its encoded form.
+    fn decode(data: &[u8]) -> Result<Self, Self::DecodeError>
+    where
+        Self: Sized;
 }
