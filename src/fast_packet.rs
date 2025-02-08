@@ -62,17 +62,7 @@ impl FastPacket {
 }
 
 /// A marker trait for messages that are transmitted as [Fast Packets](FastPacket).
-///
-/// This trait is automatically implemented for all messages that have a length greater than 8 bytes.
 pub trait FastPacketMessage: Message {}
-
-// all messages with a length greater than 8 bytes are fast packet messages
-impl<T> FastPacketMessage for T
-where
-    T: Message,
-    T::EncodedLen: IsGreater<typenum::U8, Output = True>,
-{
-}
 
 /// A reader for fast packets that combines the frames of a group into a single message.
 pub struct Reader<T: FastPacketMessage> {
