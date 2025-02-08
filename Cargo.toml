@@ -1,0 +1,11 @@
+[package]
+name = "nmea2000"
+version = "0.1.0"
+edition = "2021"
+description = "An NMEA 2000 library"
+keywords = ["nmea2000", "n2k"]
+categories = ["no-std", "embedded"]
+license = "MIT"
+repository = "https://github.com/akeamc/nmea2000"
+
+[dependencies]
