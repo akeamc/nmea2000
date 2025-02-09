@@ -20,7 +20,7 @@ pub trait MessageBuf {
     /// ```
     /// # use nmea2000::MessageBuf;
     /// let mut buf = &[0, 11][..];
-    /// assert_eq!(buf.get_word_f32(0.01), Some(28.16)); // something something endianess
+    /// assert_eq!(buf.get_fixed_f32(0.01), Some(28.16)); // something something endianess
     /// ```
     #[inline]
     fn get_fixed_f32(&mut self, precision: f32) -> Option<f32> {
@@ -58,14 +58,14 @@ where
     #[inline]
     fn get_u24(&mut self) -> u32 {
         let mut bytes = [0; 4];
-        self.copy_to_slice(&mut bytes[..4]);
+        self.copy_to_slice(&mut bytes[..3]);
         u32::from_le_bytes(bytes)
     }
 
     #[inline]
     fn get_i24(&mut self) -> i32 {
         let mut bytes = [0; 4];
-        self.copy_to_slice(&mut bytes[..4]);
+        self.copy_to_slice(&mut bytes[..3]);
         i32::from_le_bytes(bytes)
     }
 
