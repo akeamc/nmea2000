@@ -7,6 +7,10 @@ pub trait MessageBuf {
 
     fn get_i16(&mut self) -> i16;
 
+    fn get_u24(&mut self) -> u32;
+
+    fn get_i24(&mut self) -> i32;
+
     fn get_u32(&mut self) -> u32;
 
     fn get_i32(&mut self) -> i32;
@@ -49,6 +53,20 @@ where
     #[inline]
     fn get_i16(&mut self) -> i16 {
         self.get_i16_le()
+    }
+
+    #[inline]
+    fn get_u24(&mut self) -> u32 {
+        let mut bytes = [0; 4];
+        self.copy_to_slice(&mut bytes[..4]);
+        u32::from_le_bytes(bytes)
+    }
+
+    #[inline]
+    fn get_i24(&mut self) -> i32 {
+        let mut bytes = [0; 4];
+        self.copy_to_slice(&mut bytes[..4]);
+        i32::from_le_bytes(bytes)
     }
 
     #[inline]

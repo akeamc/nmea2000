@@ -93,8 +93,8 @@ where
         (self.buf_pos as u8 + 1) / 7
     }
 
-    fn bytes_remaining(&self) -> usize {
-        T::EncodedLen::to_usize() - self.buf_pos
+    const fn bytes_remaining(&self) -> usize {
+        T::EncodedLen::USIZE - self.buf_pos
     }
 
     /// Reads a fast packet and tries to decode the message if all frames have been received.
@@ -104,7 +104,7 @@ where
     pub fn read(&mut self, packet: FastPacket) -> Option<Result<T, T::DecodeError>> {
         if packet.group_no() != self.group_no {
             if packet.is_first() {
-                if packet.total_len() != Some(T::EncodedLen::to_u8()) {
+                if packet.total_len() != Some(T::EncodedLen::U8) {
                     // should we return an error here?
                     return None;
                 }
@@ -126,7 +126,7 @@ where
         self.buf[self.buf_pos..self.buf_pos + data.len()].copy_from_slice(data);
         self.buf_pos += data.len();
 
-        if self.buf_pos == T::EncodedLen::to_usize() {
+        if self.buf_pos == T::EncodedLen::USIZE {
             Some(T::decode(&self.buf))
         } else {
             None
