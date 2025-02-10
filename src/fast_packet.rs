@@ -136,7 +136,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use generic_array::typenum;
+    use generic_array::{arr, typenum, GenericArray};
 
     use crate::Message;
 
@@ -152,11 +152,11 @@ mod tests {
 
             type DecodeError = ();
 
-            fn decode(data: &[u8]) -> Result<Self, Self::DecodeError>
+            fn decode(data: &GenericArray<u8, Self::EncodedLen>) -> Result<Self, Self::DecodeError>
             where
                 Self: Sized,
             {
-                if data == [0xde, 0xad, 0xbe, 0xef, 0x00, 0x00, 0x42, 0x42, 0x42, 0x42] {
+                if *data == arr![0xde, 0xad, 0xbe, 0xef, 0x00, 0x00, 0x42, 0x42, 0x42, 0x42] {
                     Ok(Self)
                 } else {
                     Err(())
