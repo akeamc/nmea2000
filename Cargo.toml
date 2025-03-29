@@ -10,5 +10,5 @@ repository = "https://github.com/akeamc/nmea2000"
 
 [dependencies]
 bytes = { version = "1.10.0", default-features = false }
-embedded-can = { git = "https://github.com/rust-embedded/embedded-hal", version = "0.4.1" }
+embedded-can = "0.4.1"
 generic-array = "1.2.0"

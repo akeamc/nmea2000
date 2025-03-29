@@ -42,19 +42,19 @@ impl Identifier {
 
     #[inline]
     #[must_use]
-    pub const fn priority(self) -> u8 {
+    pub fn priority(self) -> u8 {
         (self.0.as_raw() >> 26) as u8 & 0x7
     }
 
     #[inline]
     #[must_use]
-    pub const fn pgn(self) -> u32 {
+    pub fn pgn(self) -> u32 {
         (self.0.as_raw() >> 8) & 0x3ffff
     }
 
     #[inline]
     #[must_use]
-    pub const fn source(self) -> u8 {
+    pub fn source(self) -> u8 {
         self.0.as_raw() as u8
     }
 }
