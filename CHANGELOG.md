@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 0.2.2 - 2025-03-29
+
+### Fixed
+
+- Changed the `Message::decode` `data` parameter type from `&GenericArray<u8, Self::EncodedLen>` to `&[u8]`.
+
 ## 0.2.1 - 2025-03-29
 
 ### Fixed

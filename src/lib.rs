@@ -14,7 +14,7 @@ mod buf;
 pub mod fast_packet;
 
 use embedded_can::ExtendedId;
-use generic_array::{ArrayLength, GenericArray};
+use generic_array::ArrayLength;
 
 pub use buf::MessageBuf;
 pub use fast_packet::FastPacket;
@@ -69,7 +69,7 @@ pub trait Message {
     type DecodeError;
 
     /// Decode a message from its encoded form.
-    fn decode(data: &GenericArray<u8, Self::EncodedLen>) -> Result<Self, Self::DecodeError>
+    fn decode(data: &[u8]) -> Result<Self, Self::DecodeError>
     where
         Self: Sized;
 }
