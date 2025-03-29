@@ -3,7 +3,7 @@
 //! some group number, frame number, and the actual data. The first frame also
 //! contains the length of the total message transmitted ([`FastPacket::total_len`]).
 
-use generic_array::{GenericArray, typenum::Unsigned};
+use generic_array::{typenum::Unsigned, GenericArray};
 
 use crate::Message;
 
@@ -136,7 +136,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use generic_array::{GenericArray, arr, typenum};
+    use generic_array::{arr, typenum, GenericArray};
 
     use crate::Message;
 

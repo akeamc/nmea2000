@@ -1,7 +1,7 @@
 [package]
 name = "nmea2000"
-version = "0.2.0"
-edition = "2024"
+version = "0.2.1"
+edition = "2021"
 description = "An NMEA 2000 library"
 keywords = ["nmea2000", "n2k"]
 categories = ["no-std", "embedded"]
