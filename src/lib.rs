@@ -5,7 +5,7 @@
 //! reverse engineering documentation](https://canboat.github.io/canboat/canboat.html)
 //! proved to be very helpful in understanding the protocol.
 //!
-//! It has been tested on the ESP32-S3 microcontroller with the ESP-IDF SDK,
+//! It has only been tested on the ESP32 microcontroller with the ESP-IDF SDK,
 //! but there is no reason it should not work on other platforms.
 
 #![no_std]
@@ -13,30 +13,49 @@
 mod buf;
 pub mod fast_packet;
 
+use embedded_can::ExtendedId;
 use generic_array::{ArrayLength, GenericArray};
 
 pub use buf::MessageBuf;
 pub use fast_packet::FastPacket;
 pub use generic_array::typenum;
 
+/// A NMEA 2000 message identifier. According to N2K specification, this is a
+/// 29-bit extended CAN ID with a 3-bit priority, a 19-bit parameter group
+/// number (PGN), and an 8-bit source address.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Identifier(u32);
+pub struct Identifier(ExtendedId);
 
 impl Identifier {
-    pub const fn from_can_id(can_id: u32) -> Self {
+    /// Create a new identifier from an extended CAN ID.
+    #[inline]
+    #[must_use]
+    pub const fn from_can_id(can_id: ExtendedId) -> Self {
         Self(can_id)
     }
 
+    #[inline]
+    #[must_use]
+    pub const fn as_can_id(self) -> ExtendedId {
+        self.0
+    }
+
+    #[inline]
+    #[must_use]
     pub const fn priority(self) -> u8 {
-        (self.0 >> 26) as u8 & 0x7
+        (self.0.as_raw() >> 26) as u8 & 0x7
     }
 
+    #[inline]
+    #[must_use]
     pub const fn pgn(self) -> u32 {
-        (self.0 >> 8) & 0x3ffff
+        (self.0.as_raw() >> 8) & 0x3ffff
     }
 
-    pub const fn src(self) -> u8 {
-        self.0 as u8
+    #[inline]
+    #[must_use]
+    pub const fn source(self) -> u8 {
+        self.0.as_raw() as u8
     }
 }
 
