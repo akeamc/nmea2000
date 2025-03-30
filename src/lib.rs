@@ -21,7 +21,7 @@ pub use fast_packet::FastPacket;
 pub use generic_array::typenum;
 
 /// A NMEA 2000 message identifier. According to N2K specification, this is a
-/// 29-bit extended CAN ID with a 3-bit priority, a 19-bit parameter group
+/// 29-bit extended CAN ID with a 3-bit priority, a 18-bit parameter group
 /// number (PGN), and an 8-bit source address.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Identifier(ExtendedId);
