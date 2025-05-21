@@ -27,6 +27,19 @@ pub use generic_array::typenum;
 pub struct Identifier(ExtendedId);
 
 impl Identifier {
+    #[inline]
+    #[must_use]
+    pub const fn new(priority: u8, pgn: u32, source: u8) -> Self {
+        debug_assert!(priority <= 7, "Priority must be in the range 0-7");
+        debug_assert!(pgn <= 0x3ffff, "PGN must be less than 0x3ffff (18 bits");
+
+        // The priority is in bits 26-28, the PGN in bits 8-25, and the source
+        // address in bits 0-7.
+        let id = ((priority as u32 & 0x7) << 26) | ((pgn & 0x3ffff) << 8) | (source as u32 & 0xff);
+
+        Self(ExtendedId::new(id).unwrap())
+    }
+
     /// Create a new identifier from an extended CAN ID.
     #[inline]
     #[must_use]
@@ -56,6 +69,12 @@ impl Identifier {
     #[must_use]
     pub fn source(self) -> u8 {
         self.0.as_raw() as u8
+    }
+}
+
+impl From<ExtendedId> for Identifier {
+    fn from(id: ExtendedId) -> Self {
+        Self::from_can_id(id)
     }
 }
 
