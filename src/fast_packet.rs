@@ -56,6 +56,14 @@ impl FastPacket {
             &self.0[1..]
         }
     }
+
+    pub fn data_mut(&mut self) -> &mut [u8] {
+        if self.is_first() {
+            &mut self.0[2..]
+        } else {
+            &mut self.0[1..]
+        }
+    }
 }
 
 /// A reader for fast packets that combines the frames of a group into a single message.
@@ -134,6 +142,58 @@ where
     }
 }
 
+// generate fast packets from a byte slice
+pub struct Iter<'a> {
+    buf: &'a [u8],
+    group_no: u8,
+    frame_no: u8,
+}
+
+impl<'a> Iter<'a> {
+    /// Creates a new iterator over the given data.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the data is longer than 255 bytes.
+    pub fn new(buf: &'a [u8], group_no: u8) -> Self {
+        debug_assert!(buf.len() <= 255, "data too big");
+        debug_assert!(group_no < 16, "group_no too big");
+
+        Self {
+            buf,
+            group_no,
+            frame_no: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for Iter<'a> {
+    type Item = FastPacket;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut packet = FastPacket([0; 8]);
+        packet.0[0] = (self.group_no << 4) | self.frame_no;
+
+        if packet.is_first() {
+            packet.0[1] = self.buf.len() as u8;
+        }
+
+        if self.buf.is_empty() && !packet.is_first() {
+            // EOF
+            return None;
+        }
+
+        let dest = packet.data_mut();
+        let len = self.buf.len().min(dest.len());
+
+        dest[..len].copy_from_slice(self.buf.split_off(..len).unwrap());
+
+        self.frame_no += 1;
+
+        Some(packet)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use generic_array::typenum;
@@ -148,9 +208,15 @@ mod tests {
         struct TestMessage;
 
         impl Message for TestMessage {
+            const PGN: u32 = 1234;
+
             type EncodedLen = typenum::U10;
 
             type DecodeError = ();
+
+            fn encode(&self, _buf: &mut [u8]) {
+                unimplemented!()
+            }
 
             fn decode(data: &[u8]) -> Result<Self, Self::DecodeError>
             where
