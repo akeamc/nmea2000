@@ -142,7 +142,7 @@ impl<'ch, C: AsyncCan> Client<'ch, C> {
         claim: IsoAddressClaim,
     ) -> Result<(), C::Error> {
         #[cfg(feature = "defmt")]
-        info!("Received ISO Address Claim from {} to {}", src, dest);
+        info!("Received ISO Address Claim from {}", src);
 
         if src != self.src {
             // ignore claims from other sources than our own
