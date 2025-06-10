@@ -59,7 +59,7 @@ impl fmt::Debug for AddressClaimState {
     }
 }
 
-pub struct Client<'ch, C: AsyncCan> {
+pub struct EventLoop<'ch, C: AsyncCan> {
     name: DeviceName,
     src: u8,
     can: C,
@@ -67,9 +67,9 @@ pub struct Client<'ch, C: AsyncCan> {
     rx: Receiver<'ch, CriticalSectionRawMutex, NmeaFrame>,
 }
 
-impl<C: AsyncCan> fmt::Debug for Client<'_, C> {
+impl<C: AsyncCan> fmt::Debug for EventLoop<'_, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Client")
+        f.debug_struct("EventLoop")
             .field("name", &self.name)
             .field("src", &self.src)
             .field("address_claim", &self.address_claim)
@@ -84,7 +84,7 @@ pub enum Error<C: AsyncCan> {
     Decode,
 }
 
-pub struct ClientHandle<'ch> {
+pub struct Client<'ch> {
     tx: Sender<'ch, CriticalSectionRawMutex, NmeaFrame>,
     group_no: u8,
 }
@@ -109,20 +109,20 @@ where
     )))
 }
 
-impl<'ch, C: AsyncCan> Client<'ch, C> {
-    pub fn new(
-        name: impl Into<DeviceName>,
-        can: C,
-        channel: &'ch mut Channel<'_, CriticalSectionRawMutex, NmeaFrame>,
-    ) -> (Self, ClientHandle<'ch>) {
-        let (tx, rx) = channel.split();
+pub fn new<'ch, C: AsyncCan>(
+    name: impl Into<DeviceName>,
+    can: C,
+    channel: &'ch mut Channel<'_, CriticalSectionRawMutex, NmeaFrame>,
+) -> (EventLoop<'ch, C>, Client<'ch>) {
+    let (tx, rx) = channel.split();
 
-        let client = Self::from_receiver(name, can, rx);
-        let handle = ClientHandle { tx, group_no: 0 };
+    let event_loop = EventLoop::from_receiver(name, can, rx);
+    let client = Client { tx, group_no: 0 };
 
-        (client, handle)
-    }
+    (event_loop, client)
+}
 
+impl<'ch, C: AsyncCan> EventLoop<'ch, C> {
     pub fn src(&self) -> u8 {
         self.src
     }
@@ -253,7 +253,7 @@ impl<'ch, C: AsyncCan> Client<'ch, C> {
     }
 }
 
-impl<'a> ClientHandle<'a> {
+impl<'a> Client<'a> {
     pub async fn send(&mut self, frame: NmeaFrame) {
         *self.tx.send().await = frame;
         self.tx.send_done();

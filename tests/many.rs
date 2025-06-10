@@ -4,7 +4,7 @@ use embassy_sync::{
     blocking_mutex::raw::CriticalSectionRawMutex, pubsub::PubSubChannel, signal::Signal,
     zerocopy_channel,
 };
-use nmea2000::{typenum, Buf, BufMut, Client, Id, Message, NmeaFrame};
+use nmea2000::{typenum, Buf, BufMut, EventLoop, Id, Message, NmeaFrame};
 use static_cell::StaticCell;
 
 use crate::bus::{FakeCan, Frame};
@@ -55,7 +55,7 @@ async fn alice() {
     let mut buf = [NmeaFrame::DEFAULT; 8];
     let mut channel = zerocopy_channel::Channel::new(&mut buf);
     let can = FakeCan::new(&CAN);
-    let (mut event_loop, mut client) = Client::new(0x1234_5678, can, &mut channel);
+    let (mut event_loop, mut client) = EventLoop::new(0x1234_5678, can, &mut channel);
 
     client
         .send(NmeaFrame::from_message(
@@ -82,7 +82,7 @@ async fn bob() {
     let mut buf = [NmeaFrame::DEFAULT; 8];
     let mut channel = zerocopy_channel::Channel::new(&mut buf);
     let can = FakeCan::new(&CAN);
-    let (mut event_loop, mut client) = Client::new(0xdead_beef, can, &mut channel);
+    let (mut event_loop, mut client) = EventLoop::new(0xdead_beef, can, &mut channel);
 
     client
         .send(NmeaFrame::from_message(

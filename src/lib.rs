@@ -22,8 +22,6 @@ pub mod well_known;
 use generic_array::{typenum::Unsigned, ArrayLength};
 
 pub use buf::{Buf, BufMut};
-#[cfg(feature = "client")]
-pub use client::Client;
 pub use fast_packet::FastPacket;
 pub use frame::NmeaFrame;
 pub use generic_array::{typenum, GenericArray};
