@@ -1,6 +1,6 @@
 [package]
 name = "nmea2000"
-version = "0.3.0-alpha.1"
+version = "0.3.0-alpha.2"
 edition = "2021"
 description = "An NMEA 2000 library"
 keywords = ["nmea2000", "n2k"]
@@ -21,3 +21,11 @@ heapless = "0.8.0"
 default = ["client"]
 client = ["dep:embassy-sync", "dep:embassy-time", "dep:embassy-futures"]
 defmt = ["dep:defmt", "heapless/defmt-03"]
+
+[dev-dependencies]
+critical-section = { version = "1.2.0", features = ["std"] }
+embassy-executor = { version = "0.7.0", features = ["arch-std", "executor-thread"] }
+embassy-futures = "0.1.1"
+embassy-sync = { version = "0.6.2", features = ["std"] }
+embassy-time = { version = "0.4.0", features = ["std"] }
+static_cell = "2.1.0"

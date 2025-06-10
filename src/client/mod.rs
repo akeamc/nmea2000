@@ -1,5 +1,7 @@
+use core::{cmp::Ordering, fmt};
+
 #[cfg(feature = "defmt")]
-use defmt::info;
+use defmt::{info, warn};
 use embassy_futures::select::{select, Either};
 use embassy_sync::{
     blocking_mutex::raw::CriticalSectionRawMutex,
@@ -49,6 +51,14 @@ impl AddressClaimState {
     }
 }
 
+impl fmt::Debug for AddressClaimState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("AddressClaimState")
+            .field("timer", &self.timer.is_some())
+            .finish()
+    }
+}
+
 pub struct Client<'ch, C: AsyncCan> {
     name: DeviceName,
     src: u8,
@@ -57,6 +67,18 @@ pub struct Client<'ch, C: AsyncCan> {
     rx: Receiver<'ch, CriticalSectionRawMutex, NmeaFrame>,
 }
 
+impl<C: AsyncCan> fmt::Debug for Client<'_, C> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Client")
+            .field("name", &self.name)
+            .field("src", &self.src)
+            .field("address_claim", &self.address_claim)
+            .finish()
+    }
+}
+
+#[derive(Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum Error<C: AsyncCan> {
     Can(C::Error),
     Decode,
@@ -99,6 +121,10 @@ impl<'ch, C: AsyncCan> Client<'ch, C> {
         let handle = ClientHandle { tx, group_no: 0 };
 
         (client, handle)
+    }
+
+    pub fn src(&self) -> u8 {
+        self.src
     }
 
     pub fn from_receiver(
@@ -149,14 +175,27 @@ impl<'ch, C: AsyncCan> Client<'ch, C> {
             return Ok(());
         }
 
-        if self.name < claim.name {
-            // re-claim address
-            #[cfg(feature = "defmt")]
-            info!("Reclaiming address {}", src);
-            self.send_address_claim().await?;
-        } else {
-            self.incr_src();
-            self.start_address_claim().await?;
+        match self.name.cmp(&claim.name) {
+            Ordering::Less => {
+                // re-claim address
+                #[cfg(feature = "defmt")]
+                info!("Reclaiming address {}", src);
+                self.send_address_claim().await?;
+            }
+            Ordering::Equal => {
+                // that's us, do nothing. this should not happen
+                #[cfg(feature = "defmt")]
+                warn!(
+                    "received address claim from a device with the same name as ours: {}",
+                    claim.name
+                );
+            }
+            Ordering::Greater => {
+                // another device has an address with a greater priority, so
+                // we cede the address to them and keep looking for another
+                self.incr_src();
+                self.start_address_claim().await?;
+            }
         }
 
         Ok(())

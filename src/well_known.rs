@@ -1,13 +1,21 @@
+use core::fmt::Debug;
+
 use generic_array::typenum;
 
 use crate::{Buf, BufMut, Message};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DeviceName(pub u64);
 
 impl From<u64> for DeviceName {
     fn from(value: u64) -> Self {
         DeviceName(value)
+    }
+}
+
+impl Debug for DeviceName {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "DeviceName(0x{:x})", self.0)
     }
 }
 

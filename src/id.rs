@@ -11,20 +11,6 @@ pub enum Format {
     Pdu2,
 }
 
-impl Format {
-    #[inline]
-    #[must_use]
-    pub fn from_pgn(pgn: u32) -> Self {
-        let id_pf = pgn >> 8;
-
-        if id_pf < 240 {
-            Self::Pdu1
-        } else {
-            Self::Pdu2
-        }
-    }
-}
-
 pub const DESTINATION_BROADCAST: u8 = 0xff;
 
 impl Id {
@@ -39,13 +25,13 @@ impl Id {
         let id = if id_pf < 240 {
             // PDU1
             debug_assert!(pgn & 0xff == 0, "lowest byte of PGN has to be 0 for PDU1");
-            (priority as u32 & 0x7) << 26 | pgn << 8 | (destination as u32) << 8 | source as u32
+            (priority as u32 & 0b111) << 26 | pgn << 8 | (destination as u32) << 8 | source as u32
         } else {
             // PDU2
             //
             // The priority is in bits 26-28, the PGN in bits 8-25, and the source
             // address in bits 0-7.
-            (priority as u32 & 0x7) << 26 | pgn << 8 | source as u32
+            (priority as u32 & 0b111) << 26 | pgn << 8 | source as u32
         };
 
         Self(embedded_can::ExtendedId::new(id).unwrap())
@@ -67,7 +53,7 @@ impl Id {
     #[inline]
     #[must_use]
     pub fn priority(self) -> u8 {
-        (self.0.as_raw() >> 26) as u8 & 0x7
+        (self.0.as_raw() >> 26) as u8 & 0b111
     }
 
     #[inline]
@@ -93,7 +79,9 @@ impl Id {
     #[inline]
     #[must_use]
     pub fn format(self) -> Format {
-        if (self.0.as_raw() >> 16) < 240 {
+        let id_pf = (self.0.as_raw() >> 16) as u8;
+
+        if id_pf < 240 {
             Format::Pdu1
         } else {
             Format::Pdu2
@@ -126,5 +114,20 @@ impl From<Id> for embedded_can::Id {
 impl defmt::Format for Id {
     fn format(&self, fmt: defmt::Formatter) {
         defmt::write!(fmt, "Id({:x})", self.0.as_raw())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{id::DESTINATION_BROADCAST, well_known::IsoAddressClaim, Id, Message};
+
+    #[test]
+    fn parse() {
+        let id = Id::new(6, IsoAddressClaim::PGN, 25, DESTINATION_BROADCAST);
+
+        assert_eq!(id.priority(), 6);
+        assert_eq!(id.pgn(), 60_928);
+        assert_eq!(id.source(), 25);
+        assert_eq!(id.destination(), 0xff);
     }
 }
