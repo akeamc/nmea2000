@@ -5,6 +5,7 @@ use generic_array::typenum;
 use crate::{Buf, BufMut, Message};
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct DeviceName(pub u64);
 
 impl From<u64> for DeviceName {
