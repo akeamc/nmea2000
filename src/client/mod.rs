@@ -1,7 +1,7 @@
 use core::{cmp::Ordering, fmt};
 
 #[cfg(feature = "defmt")]
-use defmt::{info, warn};
+use defmt::{debug, warn};
 use embassy_futures::select::{select, Either};
 use embassy_sync::{
     blocking_mutex::raw::CriticalSectionRawMutex,
@@ -168,7 +168,7 @@ impl<'ch, C: AsyncCan> EventLoop<'ch, C> {
         claim: IsoAddressClaim,
     ) -> Result<(), C::Error> {
         #[cfg(feature = "defmt")]
-        info!("Received ISO Address Claim from {}", src);
+        debug!("Received ISO Address Claim from {}", src);
 
         if src != self.src {
             // ignore claims from other sources than our own
@@ -179,7 +179,7 @@ impl<'ch, C: AsyncCan> EventLoop<'ch, C> {
             Ordering::Less => {
                 // re-claim address
                 #[cfg(feature = "defmt")]
-                info!("Reclaiming address {}", src);
+                debug!("Reclaiming address {}", src);
                 self.send_address_claim().await?;
             }
             Ordering::Equal => {
@@ -231,14 +231,10 @@ impl<'ch, C: AsyncCan> EventLoop<'ch, C> {
             match select(send_fut, receive_n2k(&mut self.can)).await {
                 Either::First(f) => {
                     #[cfg(feature = "defmt")]
-                    info!("Sending frame");
+                    debug!("Sending frame");
 
                     f.id.set_source(self.src);
                     self.can.send(f.to_can_frame()).await.map_err(Error::Can)?;
-
-                    #[cfg(feature = "defmt")]
-                    info!("Sent NMEA frame: {:?}", f);
-
                     self.rx.receive_done();
                 }
                 Either::Second(res) => {
